@@ -3,52 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
-        input[type="file"] {
-            margin: 10px;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #output {
-            margin-top: 20px;
-        }
-    </style>
+    <meta name="description" content="Convert images to PDF easily with our Image to PDF Converter application. Free and fast conversions.">
+    <meta name="keywords" content="Image to PDF, PDF converter, Convert images to PDF, Free PDF conversion">
+    <meta name="author" content="Pranav PK">
+    <title>Image to PDF Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <h1>PDF Converter</h1>
-    <input type="file" id="fileInput" accept="application/pdf">
-    <br>
-    <button id="convertButton">Convert to PDF</button>
-    <div id="output"></div>
+    <header>
+        <h1>Image to PDF Converter</h1>
+        <p>Convert your images into PDF files quickly and effortlessly!</p>
+    </header>
+    
+    <main>
+        <section class="upload-container">
+            <h2>Upload & Convert</h2>
+            <div class="upload-area" id="uploadArea">
+                <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <h3>Drop images here or click to upload</h3>
+                <p>Supported formats: JPG, PNG, GIF, BMP, WebP</p>
+                <input type="file" id="fileInput" multiple accept="image/*" hidden>
+            </div>
+        </section>
 
-    <script>
-        document.getElementById('convertButton').addEventListener('click', function() {
-            const fileInput = document.getElementById('fileInput');
-            if (fileInput.files.length === 0) {
-                document.getElementById('output').innerText = 'Please upload a file.';
-                return;
-            }
-            const file = fileInput.files[0];
-            // Here you should implement the conversion logic (e.g., using a library or an API)
-            // For demonstration, we are just showing the filename.
-            document.getElementById('output').innerText = 'Converting: ' + file.name;
-        });
-    </script>
+        <section class="preview-section">
+            <h2>Preview</h2>
+            <div class="preview-container" id="previewContainer">
+                <p class="empty-message">No images selected</p>
+            </div>
+            <div class="image-count">
+                Images selected: <span id="count">0</span>/30
+            </div>
+        </section>
+
+        <section class="controls-section">
+            <button id="clearBtn" class="btn btn-secondary">Clear All</button>
+            <button id="convertBtn" class="btn btn-primary" disabled>Convert to PDF</button>
+        </section>
+
+        <div id="progressBar" class="progress-bar" style="display: none;">
+            <div class="progress-fill"></div>
+            <p class="progress-text">Converting to PDF...</p>
+        </div>
+
+        <section>
+            <h2>How to Use</h2>
+            <ol>
+                <li>Upload your image files (drag & drop or click).</li>
+                <li>Preview your images in the preview section.</li>
+                <li>Click on the "Convert to PDF" button.</li>
+                <li>Download your PDF file automatically.</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Supported Formats</h2>
+            <p>We support JPEG, PNG, BMP, GIF, and WebP formats. You can upload up to 30 images and convert them into a single PDF file.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Pranav PK. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
