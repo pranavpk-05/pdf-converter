@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to PDF Converter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Image to PDF Converter</h1>
+            <p>Convert up to 30 images into a single PDF file</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <h2>Drop images here or click to upload</h2>
+                <p>Supported formats: JPG, PNG, GIF, BMP, WebP</p>
+                <p class="file-count">Maximum 30 images</p>
+                <input type="file" id="fileInput" multiple accept="image/*" hidden>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button id="clearBtn" class="btn btn-secondary">Clear All</button>
+                <button id="convertBtn" class="btn btn-primary" disabled>Convert to PDF</button>
+            </div>
+            <div class="image-count">
+                Images selected: <span id="count">0</span>/30
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h3>Preview</h3>
+            <div class="preview-container" id="previewContainer">
+                <p class="empty-message">No images selected</p>
+            </div>
+        </div>
+
+        <div id="progressBar" class="progress-bar" style="display: none;">
+            <div class="progress-fill"></div>
+            <p class="progress-text">Converting to PDF...</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
