@@ -126,15 +126,17 @@ async function convertToPDF() {
 
                     let renderWidth, renderHeight, x = 0, y = 0;
 
-                    if (imgRatio > pageRatio) {
-                        renderHeight = pageHeight;
-                        renderWidth = imgRatio * renderHeight;
-                        x = (pageWidth - renderWidth) / 2;
-                    } else {
-                        renderWidth = pageWidth;
-                        renderHeight = renderWidth / imgRatio;
-                        y = (pageHeight - renderHeight) / 2;
-                    }
+                   if (imgRatio > pageRatio) {
+    // Image is wider → fit to page width
+    renderWidth = pageWidth;
+    renderHeight = renderWidth / imgRatio;
+    y = (pageHeight - renderHeight) / 2;
+} else {
+    // Image is taller → fit to page height
+    renderHeight = pageHeight;
+    renderWidth = imgRatio * renderHeight;
+    x = (pageWidth - renderWidth) / 2;
+}
 
                     pdf.addImage(
                         e.target.result,
