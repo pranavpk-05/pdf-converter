@@ -4,9 +4,8 @@ const previewContainer = document.getElementById('previewContainer');
 const convertBtn = document.getElementById('convertBtn');
 const clearBtn = document.getElementById('clearBtn');
 const countDisplay = document.getElementById('count');
-const previewCount = document.getElementById('previewCount');
+const countBadge = document.getElementById('countBadge');
 const progressBar = document.getElementById('progressBar');
-const themeToggle = document.getElementById('themeToggle');
 
 const cropModal = document.getElementById('cropModal');
 const cropImage = document.getElementById('cropImage');
@@ -18,30 +17,15 @@ let selectedImages = [];
 let currentCropIndex = -1;
 let cropper = null;
 const MAX_IMAGES = 30;
-const A4_RATIO = 210 / 297; // A4 aspect ratio
+const A4_RATIO = 210 / 297;
 
-// Theme toggle
-themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-});
+// Upload click
+uploadArea.addEventListener('click', () => fileInput.click());
 
-// Load saved theme
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark-mode');
-}
+// File select
+fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
-// Open file input on click
-uploadArea.addEventListener('click', () => {
-    fileInput.click();
-});
-
-// File input change
-fileInput.addEventListener('change', (e) => {
-    handleFiles(e.target.files);
-});
-
-// Drag and drop
+// Drag & drop
 uploadArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadArea.classList.add('dragover');
@@ -58,219 +42,163 @@ uploadArea.addEventListener('drop', (e) => {
 });
 
 function handleFiles(files) {
-    const newFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-    
-    if (newFiles.length === 0) {
-        alert('Please select valid image files (JPG, PNG, GIF, BMP, WebP)');
+    const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (imgs.length === 0) {
+        alert('Select image files');
         return;
     }
-
-    const totalAfterAdd = selectedImages.length + newFiles.length;
-    
-    if (totalAfterAdd > MAX_IMAGES) {
-        alert(`You can only add up to ${MAX_IMAGES} images. Currently you have ${selectedImages.length} images.`);
-        const remaining = MAX_IMAGES - selectedImages.length;
-        if (remaining > 0) {
-            addImagesToList(newFiles.slice(0, remaining));
-        }
+    if (selectedImages.length + imgs.length > MAX_IMAGES) {
+        const rem = MAX_IMAGES - selectedImages.length;
+        if (rem > 0) addImages(imgs.slice(0, rem));
+        alert(`Max ${MAX_IMAGES} images`);
     } else {
-        addImagesToList(newFiles);
+        addImages(imgs);
     }
-    
-    updatePreview();
-    updateButtonState();
 }
 
-function addImagesToList(files) {
-    Array.from(files).forEach(file => {
+function addImages(files) {
+    files.forEach(file => {
         const reader = new FileReader();
         reader.onload = (e) => {
             selectedImages.push({
-                name: file.name,
                 data: e.target.result,
                 cropped: null
             });
-            updatePreview();
-            updateButtonState();
+            updateUI();
         };
         reader.readAsDataURL(file);
     });
 }
 
-function updatePreview() {
-    if (selectedImages.length === 0) {
-        previewContainer.innerHTML = '<p class="empty-message">No images selected yet</p>';
-        previewCount.textContent = '0 selected';
+function updateUI() {
+    if (!selectedImages.length) {
+        previewContainer.innerHTML = '<p class="empty-text">No images yet</p>';
+        countBadge.style.display = 'none';
+        clearBtn.style.display = 'none';
+        convertBtn.disabled = true;
         return;
     }
 
     previewContainer.innerHTML = '';
-    selectedImages.forEach((image, index) => {
-        const previewItem = document.createElement('div');
-        previewItem.className = 'preview-item';
-        previewItem.innerHTML = `
-            <img src="${image.cropped || image.data}" alt="preview">
-            <div class="index">${index + 1}</div>
-            <button class="crop-btn" onclick="openCropModal(${index})">Crop</button>
-            <button class="remove-btn" onclick="removeImage(${index})">×</button>
+    selectedImages.forEach((img, i) => {
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        item.innerHTML = `
+            <img src="${img.cropped || img.data}" alt="img">
+            <div class="index">${i + 1}</div>
+            <button class="crop-btn" onclick="openCrop(${i})">Crop</button>
+            <button class="remove-btn" onclick="removeImg(${i})">×</button>
         `;
-        previewContainer.appendChild(previewItem);
+        previewContainer.appendChild(item);
     });
 
     countDisplay.textContent = selectedImages.length;
-    previewCount.textContent = `${selectedImages.length} selected`;
+    countBadge.style.display = 'flex';
+    clearBtn.style.display = 'inline-block';
+    convertBtn.disabled = false;
 }
 
-function openCropModal(index) {
-    currentCropIndex = index;
-    cropImage.src = selectedImages[index].cropped || selectedImages[index].data;
+window.openCrop = function(idx) {
+    currentCropIndex = idx;
+    cropImage.src = selectedImages[idx].cropped || selectedImages[idx].data;
     cropModal.style.display = 'flex';
     
     setTimeout(() => {
-        if (cropper) {
-            cropper.destroy();
-        }
-        
+        if (cropper) cropper.destroy();
         cropper = new Cropper(cropImage, {
             aspectRatio: A4_RATIO,
             viewMode: 1,
             autoCropArea: 1,
             responsive: true,
             guides: true,
-            center: true,
-            highlight: true,
-            cropBoxMovable: true,
-            cropBoxResizable: true,
-            toggleDragModeOnDblclick: true,
+            center: true
         });
     }, 100);
-}
+};
 
-function closeCropModal() {
-    if (cropper) {
-        cropper.destroy();
-        cropper = null;
-    }
+window.removeImg = function(idx) {
+    selectedImages.splice(idx, 1);
+    updateUI();
+};
+
+function closeCrop() {
+    if (cropper) cropper.destroy();
     cropModal.style.display = 'none';
-    currentCropIndex = -1;
 }
 
-cropCancel.addEventListener('click', closeCropModal);
-cropModalClose.addEventListener('click', closeCropModal);
-
-cropApply.addEventListener('click', () => {
+cropCancel.onclick = closeCrop;
+cropModalClose.onclick = closeCrop;
+cropApply.onclick = () => {
     if (cropper && currentCropIndex >= 0) {
-        const canvas = cropper.getCroppedCanvas();
-        selectedImages[currentCropIndex].cropped = canvas.toDataURL('image/jpeg', 0.95);
-        updatePreview();
-        closeCropModal();
+        selectedImages[currentCropIndex].cropped = cropper.getCroppedCanvas().toDataURL('image/jpeg', 0.95);
+        updateUI();
+        closeCrop();
     }
-});
+};
 
-cropModal.addEventListener('click', (e) => {
-    if (e.target === cropModal) {
-        closeCropModal();
-    }
-});
+cropModal.onclick = (e) => {
+    if (e.target === cropModal) closeCrop();
+};
 
-function removeImage(index) {
-    selectedImages.splice(index, 1);
-    updatePreview();
-    updateButtonState();
-}
-
-function updateButtonState() {
-    convertBtn.disabled = selectedImages.length === 0;
-}
-
-clearBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to clear all images?')) {
+clearBtn.onclick = () => {
+    if (confirm('Clear all images?')) {
         selectedImages = [];
         fileInput.value = '';
-        updatePreview();
-        updateButtonState();
+        updateUI();
     }
-});
+};
 
-convertBtn.addEventListener('click', () => {
-    if (selectedImages.length === 0) {
-        alert('Please select at least one image');
-        return;
-    }
-    convertImagesToPDF();
-});
+convertBtn.onclick = () => selectedImages.length && convertPDF();
 
-async function convertImagesToPDF() {
+async function convertPDF() {
     try {
         progressBar.style.display = 'block';
         convertBtn.disabled = true;
         clearBtn.disabled = true;
 
         const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pw = pdf.internal.pageSize.getWidth();
+        const ph = pdf.internal.pageSize.getHeight();
 
         for (let i = 0; i < selectedImages.length; i++) {
-            const image = selectedImages[i];
-            const imageData = image.cropped || image.data;
-
-            // Create a temporary image to get dimensions
+            const data = selectedImages[i].cropped || selectedImages[i].data;
             const img = new Image();
-            img.src = imageData;
+            img.src = data;
 
             await new Promise((resolve) => {
                 img.onload = () => {
-                    const imgWidth = img.width;
-                    const imgHeight = img.height;
-                    const ratio = imgWidth / imgHeight;
-
-                    let width = pdfWidth - 10;
-                    let height = width / ratio;
-
-                    if (height > pdfHeight - 10) {
-                        height = pdfHeight - 10;
-                        width = height * ratio;
+                    let w = pw - 10;
+                    let h = w / (img.width / img.height);
+                    if (h > ph - 10) {
+                        h = ph - 10;
+                        w = h * (img.width / img.height);
                     }
-
-                    const x = (pdfWidth - width) / 2;
-                    const y = (pdfHeight - height) / 2;
-
-                    pdf.addImage(imageData, 'JPEG', x, y, width, height);
-
-                    if (i < selectedImages.length - 1) {
-                        pdf.addPage();
-                    }
-
+                    const x = (pw - w) / 2;
+                    const y = (ph - h) / 2;
+                    pdf.addImage(data, 'JPEG', x, y, w, h);
+                    if (i < selectedImages.length - 1) pdf.addPage();
                     resolve();
                 };
             });
         }
 
-        // Generate filename with timestamp
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const filename = `PDF-${timestamp}-${Date.now()}.pdf`;
-
-        pdf.save(filename);
-
+        pdf.save(`PDF-${new Date().toISOString().slice(0, 10)}.pdf`);
         progressBar.style.display = 'none';
-        alert(`✓ PDF created successfully!\n${selectedImages.length} image${selectedImages.length > 1 ? 's' : ''} converted to A4 format`);
+        alert(`✓ PDF ready! ${selectedImages.length} image${selectedImages.length > 1 ? 's' : ''}`);
+        
+        selectedImages = [];
+        fileInput.value = '';
+        updateUI();
         clearBtn.disabled = false;
 
-    } catch (error) {
-        console.error('Error converting images to PDF:', error);
-        alert('Error converting images to PDF. Please try again.');
+    } catch (err) {
+        console.error(err);
+        alert('Error creating PDF');
         progressBar.style.display = 'none';
         convertBtn.disabled = false;
         clearBtn.disabled = false;
     }
 }
 
-// Initialize
-updatePreview();
-updateButtonState();
+updateUI();
