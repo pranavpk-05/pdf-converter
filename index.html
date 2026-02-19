@@ -1,74 +1,281 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Convert images to PDF easily with our Image to PDF Converter application. Free and fast conversions.">
-    <meta name="keywords" content="Image to PDF, PDF converter, Convert images to PDF, Free PDF conversion">
-    <meta name="author" content="Pranav PK">
-    <title>Image to PDF Converter</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Professional Image to PDF Converter</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 900px;
+            margin: auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed #888;
+            padding: 30px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+        }
+
+        .preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .preview img {
+            width: 120px;
+            border-radius: 6px;
+        }
+
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 15px;
+            cursor: pointer;
+            border: none;
+            background: #1976d2;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #1976d2;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Image to PDF Converter</h1>
-        <p>Convert your images into PDF files quickly and effortlessly!</p>
-    </header>
-    
-    <main>
-        <section class="upload-container">
-            <h2>Upload & Convert</h2>
-            <div class="upload-area" id="uploadArea">
-                <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <h3>Drop images here or click to upload</h3>
-                <p>Supported formats: JPG, PNG, GIF, BMP, WebP</p>
-                <input type="file" id="fileInput" multiple accept="image/*" hidden>
-            </div>
-        </section>
 
-        <section class="preview-section">
-            <h2>Preview</h2>
-            <div class="preview-container" id="previewContainer">
-                <p class="empty-message">No images selected</p>
-            </div>
-            <div class="image-count">
-                Images selected: <span id="count">0</span>/30
-            </div>
-        </section>
+<div class="container">
+    <h2>Image to PDF Converter</h2>
 
-        <section class="controls-section">
-            <button id="clearBtn" class="btn btn-secondary">Clear All</button>
-            <button id="convertBtn" class="btn btn-primary" disabled>Convert to PDF</button>
-        </section>
+    <div class="upload-area" id="uploadArea">
+        Click or Drag & Drop Images Here
+    </div>
 
-        <div id="progressBar" class="progress-bar" style="display: none;">
-            <div class="progress-fill"></div>
-            <p class="progress-text">Converting to PDF...</p>
+    <input type="file" id="fileInput" multiple accept="image/*" hidden>
+
+    <div class="settings">
+        <div>
+            <label>Page Size</label>
+            <select id="pageSize">
+                <option value="a4">A4</option>
+                <option value="letter">Letter</option>
+                <option value="a3">A3</option>
+            </select>
         </div>
 
-        <section>
-            <h2>How to Use</h2>
-            <ol>
-                <li>Upload your image files (drag & drop or click).</li>
-                <li>Preview your images in the preview section.</li>
-                <li>Click on the "Convert to PDF" button.</li>
-                <li>Download your PDF file automatically.</li>
-            </ol>
-        </section>
+        <div>
+            <label>Orientation</label>
+            <select id="orientation">
+                <option value="p">Portrait</option>
+                <option value="l">Landscape</option>
+            </select>
+        </div>
 
-        <section>
-            <h2>Supported Formats</h2>
-            <p>We support JPEG, PNG, BMP, GIF, and WebP formats. You can upload up to 30 images and convert them into a single PDF file.</p>
-        </section>
-    </main>
+        <div>
+            <label>Margin (mm)</label>
+            <input type="number" id="marginInput" value="10" min="0" max="50">
+        </div>
 
-    <footer>
-        <p>&copy; 2026 Pranav PK. All rights reserved.</p>
-    </footer>
+        <div>
+            <label>Image Quality: <span id="qualityValue">1.0</span></label>
+            <input type="range" id="qualityRange" min="0.1" max="1" step="0.1" value="1">
+        </div>
+    </div>
 
-    <script src="script.js"></script>
+    <button id="convertBtn">Convert to PDF</button>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-fill"></div>
+    </div>
+
+    <div class="preview" id="previewContainer"></div>
+</div>
+
+<script>
+
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const previewContainer = document.getElementById('previewContainer');
+const convertBtn = document.getElementById('convertBtn');
+const progressBar = document.getElementById('progressBar');
+const qualityRange = document.getElementById('qualityRange');
+const qualityValue = document.getElementById('qualityValue');
+const pageSizeSelect = document.getElementById('pageSize');
+const orientationSelect = document.getElementById('orientation');
+const marginInput = document.getElementById('marginInput');
+
+let selectedFiles = [];
+let imageQuality = 1.0;
+
+uploadArea.addEventListener('click', () => fileInput.click());
+
+uploadArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', e => {
+    handleFiles(e.target.files);
+});
+
+qualityRange.addEventListener('input', () => {
+    imageQuality = parseFloat(qualityRange.value);
+    qualityValue.textContent = imageQuality.toFixed(1);
+});
+
+function handleFiles(files) {
+    const images = Array.from(files).filter(f => f.type.startsWith('image/'));
+    selectedFiles = [...selectedFiles, ...images];
+    updatePreview();
+}
+
+function updatePreview() {
+    previewContainer.innerHTML = '';
+    selectedFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            previewContainer.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+convertBtn.addEventListener('click', async () => {
+
+    if (selectedFiles.length === 0) {
+        alert("Select images first");
+        return;
+    }
+
+    progressBar.style.display = "block";
+    const progressFill = document.querySelector('.progress-fill');
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF(
+        orientationSelect.value,
+        "mm",
+        pageSizeSelect.value
+    );
+
+    const margin = parseFloat(marginInput.value) || 0;
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+
+        const file = selectedFiles[i];
+
+        await new Promise(resolve => {
+
+            const reader = new FileReader();
+
+            reader.onload = e => {
+
+                const img = new Image();
+
+                img.onload = () => {
+
+                    if (i > 0) {
+                        pdf.addPage(pageSizeSelect.value, orientationSelect.value);
+                    }
+
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+
+                    const usableWidth = pageWidth - margin * 2;
+                    const usableHeight = pageHeight - margin * 2;
+
+                    const imgRatio = img.width / img.height;
+                    const pageRatio = usableWidth / usableHeight;
+
+                    let renderWidth, renderHeight;
+
+                    if (imgRatio > pageRatio) {
+                        renderWidth = usableWidth;
+                        renderHeight = usableWidth / imgRatio;
+                    } else {
+                        renderHeight = usableHeight;
+                        renderWidth = usableHeight * imgRatio;
+                    }
+
+                    const x = (pageWidth - renderWidth) / 2;
+                    const y = (pageHeight - renderHeight) / 2;
+
+                    pdf.addImage(
+                        e.target.result,
+                        "JPEG",
+                        x,
+                        y,
+                        renderWidth,
+                        renderHeight,
+                        undefined,
+                        "SLOW",
+                        imageQuality
+                    );
+
+                    progressFill.style.width =
+                        ((i + 1) / selectedFiles.length) * 100 + "%";
+
+                    resolve();
+                };
+
+                img.src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    pdf.save("converted.pdf");
+
+    progressBar.style.display = "none";
+    progressFill.style.width = "0%";
+});
+
+</script>
+
 </body>
 </html>
