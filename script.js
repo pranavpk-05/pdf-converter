@@ -8,6 +8,7 @@ const progressBar = document.getElementById('progressBar');
 
 let selectedFiles = [];
 const MAX_FILES = 30;
+let imageQuality = 1.0;  // Default = highest quality
 
 uploadArea.addEventListener('click', () => fileInput.click());
 
@@ -102,12 +103,9 @@ async function convertToPDF() {
 
     progressBar.style.display = 'block';
     const progressFill = progressBar.querySelector('.progress-fill');
-    
+
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
-    
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
 
     for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
@@ -117,17 +115,42 @@ async function convertToPDF() {
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    if (i > 0) pdf.addPage();
-                    
-                    const imgWidth = pageWidth - 20;
-                    const imgHeight = (img.height * imgWidth) / img.width;
-                    const y = (pageHeight - imgHeight) / 2;
 
-                    pdf.addImage(e.target.result, 'JPEG', 10, Math.max(10, y), imgWidth, imgHeight);
-                    
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+
+                    if (i > 0) pdf.addPage();
+
+                    const imgRatio = img.width / img.height;
+                    const pageRatio = pageWidth / pageHeight;
+
+                    let renderWidth, renderHeight, x = 0, y = 0;
+
+                    if (imgRatio > pageRatio) {
+                        renderHeight = pageHeight;
+                        renderWidth = imgRatio * renderHeight;
+                        x = (pageWidth - renderWidth) / 2;
+                    } else {
+                        renderWidth = pageWidth;
+                        renderHeight = renderWidth / imgRatio;
+                        y = (pageHeight - renderHeight) / 2;
+                    }
+
+                    pdf.addImage(
+                        e.target.result,
+                        'JPEG',
+                        x,
+                        y,
+                        renderWidth,
+                        renderHeight,
+                        undefined,
+                        'SLOW',
+                        imageQuality   // make sure slider variable exists
+                    );
+
                     const progress = ((i + 1) / selectedFiles.length) * 100;
                     progressFill.style.width = progress + '%';
-                    
+
                     resolve();
                 };
                 img.src = e.target.result;
@@ -137,9 +160,10 @@ async function convertToPDF() {
     }
 
     pdf.save('converted.pdf');
+
     progressBar.style.display = 'none';
     progressFill.style.width = '0%';
-    
+
     alert('PDF downloaded successfully!');
     selectedFiles = [];
     fileInput.value = '';
