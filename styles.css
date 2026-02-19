@@ -1,4 +1,6 @@
-/* ===== GLOBAL ===== */
+body {
+    background: red !important;
+}/* ===== GLOBAL ===== */
 *{
     margin:0;
     padding:0;
