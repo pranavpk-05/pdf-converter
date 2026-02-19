@@ -1,89 +1,74 @@
 body{
-    font-family: Arial, sans-serif;
-    background:#f2f4f8;
-    padding:30px;
+    margin:0;
+    font-family:Inter, sans-serif;
+    background:#111827;
+    color:#f3f4f6;
 }
 
-.container{
-    max-width:1000px;
+.app{
+    max-width:900px;
     margin:auto;
-    background:#fff;
-    padding:30px;
-    border-radius:12px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    padding:40px 20px;
 }
 
-h1{
+header{
     text-align:center;
-    margin-bottom:25px;
+    margin-bottom:30px;
 }
 
-.upload-area{
-    border:2px dashed #007bff;
-    padding:40px;
+.upload-box{
+    border:2px dashed #374151;
+    padding:60px;
     text-align:center;
     cursor:pointer;
-    border-radius:10px;
+    border-radius:16px;
     transition:0.3s;
+    background:#1f2937;
 }
 
-.upload-area.dragover{
-    background:#e8f1ff;
+.upload-box:hover{
+    border-color:#6366f1;
 }
 
-.settings{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:15px;
-    margin:25px 0;
-}
-
-.settings div{
+.controls{
     display:flex;
-    flex-direction:column;
-}
-
-label{
-    font-size:14px;
-    margin-bottom:5px;
-}
-
-select,input{
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:25px;
+    flex-wrap:wrap;
+    gap:15px;
 }
 
 button{
-    padding:12px 20px;
-    background:#007bff;
+    background:#6366f1;
     border:none;
+    padding:12px 24px;
     color:white;
-    border-radius:6px;
+    border-radius:10px;
     cursor:pointer;
-    font-size:16px;
+    font-size:15px;
 }
 
 button:hover{
-    background:#0056b3;
+    background:#4f46e5;
 }
 
 .preview{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:20px;
+    margin-top:30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+    gap:12px;
 }
 
 .preview img{
-    width:120px;
-    border-radius:8px;
+    width:100%;
+    border-radius:10px;
 }
 
 .progress{
-    height:8px;
-    background:#ddd;
-    margin-top:15px;
+    height:6px;
+    background:#374151;
+    margin-top:25px;
     border-radius:4px;
     overflow:hidden;
     display:none;
@@ -92,5 +77,5 @@ button:hover{
 .progress-fill{
     height:100%;
     width:0%;
-    background:#007bff;
+    background:#6366f1;
 }
