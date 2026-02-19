@@ -5,6 +5,7 @@ const convertBtn = document.getElementById('convertBtn');
 const clearBtn = document.getElementById('clearBtn');
 const countSpan = document.getElementById('count');
 const progressBar = document.getElementById('progressBar');
+const pdfModeSelect = document.getElementById('pdfMode');
 
 let selectedFiles = [];
 const MAX_FILES = 30;
