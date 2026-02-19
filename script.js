@@ -104,9 +104,6 @@ async function convertToPDF() {
     progressBar.style.display = 'block';
     const progressFill = progressBar.querySelector('.progress-fill');
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-
     for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         const reader = new FileReader();
@@ -114,29 +111,42 @@ async function convertToPDF() {
         await new Promise((resolve) => {
             reader.onload = (e) => {
                 const img = new Image();
+
                 img.onload = () => {
+
+                    // Auto detect orientation based on image
+                    const orientation = img.width > img.height ? 'l' : 'p';
+
+                    const { jsPDF } = window.jspdf;
+                    const pdf = (i === 0)
+                        ? new jsPDF(orientation, 'mm', 'a4')
+                        : window.currentPDF;
+
+                    if (i === 0) {
+                        window.currentPDF = pdf;
+                    } else {
+                        pdf.addPage('a4', orientation);
+                    }
 
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
 
-                    if (i > 0) pdf.addPage();
-
                     const imgRatio = img.width / img.height;
                     const pageRatio = pageWidth / pageHeight;
 
-                    let renderWidth, renderHeight, x = 0, y = 0;
+                    let renderWidth, renderHeight;
 
-                   if (imgRatio > pageRatio) {
-    // Image is wider → fit to page width
-    renderWidth = pageWidth;
-    renderHeight = renderWidth / imgRatio;
-    y = (pageHeight - renderHeight) / 2;
-} else {
-    // Image is taller → fit to page height
-    renderHeight = pageHeight;
-    renderWidth = imgRatio * renderHeight;
-    x = (pageWidth - renderWidth) / 2;
-}
+                    // FIT ENTIRE IMAGE (NO CROP)
+                    if (imgRatio > pageRatio) {
+                        renderWidth = pageWidth;
+                        renderHeight = pageWidth / imgRatio;
+                    } else {
+                        renderHeight = pageHeight;
+                        renderWidth = pageHeight * imgRatio;
+                    }
+
+                    const x = (pageWidth - renderWidth) / 2;
+                    const y = (pageHeight - renderHeight) / 2;
 
                     pdf.addImage(
                         e.target.result,
@@ -147,7 +157,7 @@ async function convertToPDF() {
                         renderHeight,
                         undefined,
                         'SLOW',
-                        imageQuality   // make sure slider variable exists
+                        imageQuality || 1.0
                     );
 
                     const progress = ((i + 1) / selectedFiles.length) * 100;
@@ -155,13 +165,15 @@ async function convertToPDF() {
 
                     resolve();
                 };
+
                 img.src = e.target.result;
             };
+
             reader.readAsDataURL(file);
         });
     }
 
-    pdf.save('converted.pdf');
+    window.currentPDF.save('converted.pdf');
 
     progressBar.style.display = 'none';
     progressFill.style.width = '0%';
