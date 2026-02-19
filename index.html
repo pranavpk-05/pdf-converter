@@ -3,65 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to PDF Converter</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+    <title>Image to PDF - High Quality Converter</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📄 Image to PDF</h1>
-            <p>Convert images to A4 PDF</p>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Image to PDF</h1>
+                <p>Convert images to professional high-quality PDFs</p>
+            </div>
         </header>
 
-        <main>
-            <!-- Upload Area -->
-            <div class="upload-box" id="uploadArea">
-                <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <h2>Click or drop images</h2>
-                <p>JPG, PNG, GIF, BMP, WebP (Max 30)</p>
-                <input type="file" id="fileInput" multiple accept="image/*" hidden>
-            </div>
+        <!-- Main Content -->
+        <main class="app-main">
+            <div class="content-wrapper">
+                <!-- Upload Section -->
+                <section class="upload-section">
+                    <div id="uploadArea" class="upload-zone">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h2>Add Images</h2>
+                        <p>Drag and drop or click to browse</p>
+                        <span class="hint">(Max 30 images, supports PNG, JPG, WebP)</span>
+                        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                    </div>
+                </section>
 
-            <!-- Controls -->
-            <div class="controls">
-                <div class="count-badge" id="countBadge" style="display: none;">
-                    <span id="count">0</span>/30
+                <!-- Preview Section -->
+                <section class="preview-section" id="previewSection" style="display: none;">
+                    <div class="section-header">
+                        <h2>Images (<span id="count">0</span>)</h2>
+                        <div class="quality-selector">
+                            <label>Quality:</label>
+                            <select id="qualitySelect">
+                                <option value="high">High (Recommended)</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low (Smaller file)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="previewContainer" class="preview-grid"></div>
+                </section>
+
+                <!-- Progress Bar -->
+                <div id="progressBar" class="progress-container" style="display: none;">
+                    <div class="progress-label">Converting...</div>
+                    <div class="progress-bar-inner"></div>
                 </div>
-                <div class="actions">
-                    <button id="clearBtn" class="btn btn-secondary" style="display: none;">Clear</button>
-                    <button id="convertBtn" class="btn btn-primary" disabled>Convert to PDF</button>
+
+                <!-- Action Buttons -->
+                <div class="actions-section" id="actionsSection" style="display: none;">
+                    <button id="clearBtn" class="btn btn-clear">Clear All</button>
+                    <button id="convertBtn" class="btn btn-convert" disabled>Convert to PDF</button>
                 </div>
-            </div>
-
-            <!-- Preview -->
-            <div class="gallery" id="previewContainer">
-                <p class="empty-text">No images yet</p>
-            </div>
-
-            <!-- Progress -->
-            <div id="progressBar" class="progress-bar" style="display: none;">
-                <div class="progress-fill"></div>
-                <p>Converting...</p>
             </div>
         </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>High-quality PDF conversion • A4 cropping support</p>
+        </footer>
     </div>
 
     <!-- Crop Modal -->
-    <div id="cropModal" class="modal" style="display: none;">
-        <div class="modal-box">
-            <div class="modal-top">
-                <h3>Crop Image (A4)</h3>
-                <button class="close-btn" id="cropModalClose">&times;</button>
+    <div id="cropModal" class="crop-modal" style="display: none;">
+        <div class="crop-overlay"></div>
+        <div class="crop-container">
+            <div class="crop-header">
+                <h2>Crop & Adjust</h2>
+                <button id="cropModalClose" class="crop-close">&times;</button>
             </div>
-            <div class="modal-body-crop">
-                <img id="cropImage" src="" alt="Crop">
+            <div class="crop-body">
+                <div class="crop-image-wrapper">
+                    <img id="cropImage" src="" alt="Image to crop">
+                </div>
+                <div class="crop-info">
+                    <p>📐 Adjust the boundary to define your image content</p>
+                </div>
             </div>
-            <div class="modal-bottom">
-                <button id="cropCancel" class="btn btn-secondary">Cancel</button>
-                <button id="cropApply" class="btn btn-primary">Apply</button>
+            <div class="crop-footer">
+                <button id="cropCancel" class="btn btn-clear">Cancel</button>
+                <button id="cropApply" class="btn btn-primary">Apply Crop</button>
             </div>
         </div>
     </div>
