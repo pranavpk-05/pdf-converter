@@ -12,10 +12,6 @@ let imageQuality = 1.0;
 
 uploadArea.onclick = () => fileInput.click();
 
-uploadArea.addEventListener("dragover", e=>{
-    e.preventDefault();
-});
-
 uploadArea.addEventListener("drop", e=>{
     e.preventDefault();
     handleFiles(e.dataTransfer.files);
@@ -48,6 +44,58 @@ function renderPreview(){
     });
 }
 
+/* ---------- AUTO WHITE TRIM FUNCTION ---------- */
+function trimWhiteSpace(img){
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+    const data = imageData.data;
+
+    let top = null, bottom = null, left = null, right = null;
+
+    for(let y=0; y<canvas.height; y++){
+        for(let x=0; x<canvas.width; x++){
+            const index = (y*canvas.width + x)*4;
+            const r = data[index];
+            const g = data[index+1];
+            const b = data[index+2];
+
+            // detect non-white pixel
+            if(!(r>240 && g>240 && b>240)){
+                if(top===null) top=y;
+                bottom=y;
+                if(left===null || x<left) left=x;
+                if(right===null || x>right) right=x;
+            }
+        }
+    }
+
+    if(top===null) return canvas;
+
+    const width = right-left;
+    const height = bottom-top;
+
+    const croppedCanvas = document.createElement("canvas");
+    croppedCanvas.width = width;
+    croppedCanvas.height = height;
+
+    croppedCanvas.getContext("2d").drawImage(
+        canvas,
+        left, top, width, height,
+        0, 0, width, height
+    );
+
+    return croppedCanvas;
+}
+
+/* ---------- PDF GENERATION ---------- */
+
 convertBtn.addEventListener("click", async ()=>{
 
 if(files.length===0){
@@ -73,13 +121,15 @@ for(let i=0;i<files.length;i++){
 
             img.onload=()=>{
 
-                const mmPerPx=0.264583;
-                const width=img.width*mmPerPx;
-                const height=img.height*mmPerPx;
+                const trimmedCanvas = trimWhiteSpace(img);
+
+                const mmPerPx = 0.264583;
+                const width = trimmedCanvas.width * mmPerPx;
+                const height = trimmedCanvas.height * mmPerPx;
 
                 if(first){
-                    pdf=new jsPDF({
-                        orientation:width>height?"l":"p",
+                    pdf = new jsPDF({
+                        orientation: width>height?"l":"p",
                         unit:"mm",
                         format:[width,height]
                     });
@@ -89,8 +139,10 @@ for(let i=0;i<files.length;i++){
                         width>height?"l":"p");
                 }
 
+                const imgData = trimmedCanvas.toDataURL("image/jpeg", imageQuality);
+
                 pdf.addImage(
-                    e.target.result,
+                    imgData,
                     "JPEG",
                     0,
                     0,
@@ -101,8 +153,8 @@ for(let i=0;i<files.length;i++){
                     imageQuality
                 );
 
-                progressFill.style.width=
-                    ((i+1)/files.length)*100+"%";
+                progressFill.style.width =
+                    ((i+1)/files.length)*100 + "%";
 
                 resolve();
             };
